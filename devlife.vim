@@ -1,25 +1,35 @@
 " ====================================================================
-" DevLife v1.0, May 2013
+" DevLife v1.1, Jan 2024
 " ========================
 " 
 " Small VIM game to kill time
-" (c)2013 Evgueni Antonov
+" (c)2024 Evgueni Antonov
 "
+" CHANGELOG:
+" 2024-01-07: v1.1 Updated for Vim 8.2, tested on Lubuntu 22.04
+" 2013-05-10: v1.0 Initial version release for Vim 7.3, tested on Windows 7
 "
 " SETUP:
-" Just edit the value on line 34: devlifeSavePath = 'your/savegames/path/'
-" Please make sure the path ends with a separator!
+" No need to do anything. But if you want to change your savegame path,
+" just edit the value on line 40: g:savegamePath = '/tmp/'
+" Please make sure the path ends with a slash!
 " Example: 'c:\proj\hal9000\' or if on Linux: '/blah/proj/hal9000/'
 "
-" RUN:
-" :so devlife.vim
+" RUN ON VIM 8.2:
+" :call RunDevLife()
+"
+" RUN ON VIM 7.3:
+" :source devlife.vim
 " :call RunDevLife()
 "
 " TO RUN WITH SHORTCUTS, ADD TO VIMRC:
-" :nmap \s :so devlife.vim
+" :nmap \s :source devlife.vim
 " :nmap \b :call RunDevLife()
 " then use \s to load the source and \b to run the game.
 " You may also specify your path to devlife.vim .
+"
+" NOTE:
+" It seems Vim 8 loads automatically the plugins, so no need to load the source.
 "
 " HOW TO PLAY:
 " Just run the game. Detailed instructions are available ingame.
@@ -31,17 +41,18 @@
 " SETUP: This is the default savegame path.
 " Put your savegame path in between the '' chars.
 " Always put a slash/backslash in the end!
-let g:savegamePath = ''
+let g:savegamePath = '/tmp/'
 
 
 " Game global
 let g:game = {
     \'nameShort'        : 'DevLife',
     \'nameFull'         : 'DEVELOPER''s LIFE',
-    \'version'          : '1.0',
+    \'version'          : '1.1',
     \'authorName'       : 'Evgueni Antonov',
-    \'authorContact'    : 'http://ca.linkedin.com/in/eantonoff/',
-    \'versionDate'      : '2013-05-10',
+    \'authorContact'    : 'https://www.linkedin.com/in/eantonoff/',
+    \'versionDate'      : '2024-01-07',
+    \'createdOn'        : '2013-05-10',
     \'pathSavegame'     : g:savegamePath,
     \'whereToGet'       : 'https://github.com/StrayFeral/DevLife.git',
     \'license'          : 'http://www.gnu.org/licenses/gpl-3.0.html'
@@ -53,7 +64,7 @@ let g:game = {
 
 " Loaded instance check
 if ( exists( 'devlife_is_loaded' ) )
-    call g:ppp( 'DevLife is already loaded. Loading skipped.' )
+    call g:PPP( 'DevLife is already loaded. Loading skipped.' )
     finish
 endif
 
@@ -66,7 +77,7 @@ let g:devlife_is_loaded = 1
 " MAIN RUN: Call this to start the game.
 function! RunDevLife()
     call GameInit()
-    call g:ppp( 'WELCOME!' ) | call g:ppp( '' )
+    call g:PPP( 'WELCOME!' ) | call g:PPP( '' )
     call ShowIntro()
     call Main()
 endfunction
@@ -84,19 +95,19 @@ function! Main()
     let userChoice = ''
     while ( userChoice != g:commandGlobalQuit && !GotFired() )
         let userChoiceDefault = ''
-        let userChoice = g:getMenuChoice( userChoiceDefault )
+        let userChoice = g:GetMenuChoice( userChoiceDefault )
         
         " Processing commands
         if ( userChoice ==# 'n' )     | " NEW GAME
             call StartNewGame()
             call BackupAge( 0 )
         elseif ( userChoice ==# 'c' ) | " CLEAR SCREEN
-            call g:cls()
+            call g:CLS()
         elseif ( userChoice ==# 'p' ) | " PLAYER STATS
             call PrintPlayer()
         elseif ( userChoice ==# 's' ) | " SAVE GAME
             if ( !GameStarted() )
-                call g:ppp( 'ERROR: This command is available while in a game. Please start a new game.' )
+                call g:PPP( 'ERROR: This command is available while in a game. Please start a new game.' )
             else
                 call SaveGame()
             endif
@@ -105,10 +116,10 @@ function! Main()
         elseif ( userChoice ==# 'h' ) | " HIGHSCORES
             call ShowHighscores()
         elseif ( userChoice ==# 'c' ) | " CLEAR SCREEN
-            call g:ppp( "cls" )
+            call g:PPP( "cls" )
         elseif ( userChoice ==# '1' ) | " WORK
             if ( !GameStarted() )
-                call g:ppp( 'ERROR: This command is available while in a game. Please start a new game.' )
+                call g:PPP( 'ERROR: This command is available while in a game. Please start a new game.' )
             else
                 call DoWork()
                 call CalcScore()
@@ -116,7 +127,7 @@ function! Main()
             endif
         elseif ( userChoice ==# '3' ) | " HAVE FUN
             if ( !GameStarted() )
-                call g:ppp( 'ERROR: This command is available while in a game. Please start a new game.' )
+                call g:PPP( 'ERROR: This command is available while in a game. Please start a new game.' )
             else
                 call HaveFun()
                 call CalcScore()
@@ -124,7 +135,7 @@ function! Main()
             endif
         elseif ( userChoice ==# '2' ) | " CREATE CODE BACKUP
             if ( !GameStarted() )
-                call g:ppp( 'ERROR: This command is available while in a game. Please start a new game.' )
+                call g:PPP( 'ERROR: This command is available while in a game. Please start a new game.' )
             else
                 call CreateBackup()
                 "call ChangeStat( g:stats.experience, 0 )
@@ -148,18 +159,18 @@ function! Main()
 
     if ( userChoice ==# 'q' )
     " END GAME
-        call g:ppp( '' )
-        call g:ppp( 'Thanks for playing ' . g:game.nameShort . '! You can now quit the editor.' )
-        call g:ppp( '' )
+        call g:PPP( '' )
+        call g:PPP( 'Thanks for playing ' . g:game.nameShort . '! You can now quit the editor.' )
+        call g:PPP( '' )
     else
         " Got fired
-        call g:ppp( '' )
-        call g:ppp( '[GOT FIRED] Your manager asks to see you in private. When you enter the room, you see a young girl. She presents herself as a member of the Human Resources Department and gives you an envelope. You open it and you see a letter of termination of your contract. Your manager says your services are no longer needed and asks you to leave the office immediatelly. You leave the office.' )
-        call g:ppp( '' )
+        call g:PPP( '' )
+        call g:PPP( '[GOT FIRED] Your manager asks to see you in private. When you enter the room, you see a young girl. She presents herself as a member of the Human Resources Department and gives you an envelope. You open it and you see a letter of termination of your contract. Your manager says your services are no longer needed and asks you to leave the office immediatelly. You leave the office.' )
+        call g:PPP( '' )
         call ShowHighscores()
-        call g:ppp( '' )
-        call g:ppp( '[GAME OVER] Your game is now over. Thank you for playing!' )
-        call g:ppp( '' )
+        call g:PPP( '' )
+        call g:PPP( '[GAME OVER] Your game is now over. Thank you for playing!' )
+        call g:PPP( '' )
     endif
 
     
@@ -184,9 +195,9 @@ endfunction
 
 " Got Lazy
 function! GotLazy()
-    call g:ppp( '' )
-    call g:ppp( '[GOT LAZY] ' . GetLazyMessage() )
-    call g:ppp( '' )
+    call g:PPP( '' )
+    call g:PPP( '[GOT LAZY] ' . GetLazyMessage() )
+    call g:PPP( '' )
     let g:player.fun -= 5
     let g:player.motivation -= 20
     let g:player.productivity -= 20
@@ -208,9 +219,9 @@ endfunction
 
 " Got Workaholic
 function! GotWorkaholic()
-    call g:ppp( '' )
-    call g:ppp( '[GOT WORKAHOLIC] ' . GetWorkaholicMessage() )
-    call g:ppp( '' )
+    call g:PPP( '' )
+    call g:PPP( '[GOT WORKAHOLIC] ' . GetWorkaholicMessage() )
+    call g:PPP( '' )
     let g:player.fun -= 5
     let g:player.motivation -= 20
     if ( g:player.fun < 0 )
@@ -295,21 +306,21 @@ endfunction
 
 " Intro
 function! ShowIntro()
-    call g:printArray( g:msgIntro )
+    call g:PrintArray( g:msgIntro )
 endfunction
 
 
 " Help
 function! ShowHelp()
-    call g:ppp( 'GAME KEYS' )
-    call g:hr()
-    call g:printHash( g:validCommands, 3 )
+    call g:PPP( 'GAME KEYS' )
+    call g:HR()
+    call g:PrintHash( g:validCommands, 3 )
 endfunction
 
 
 " Boss key
 function! ShowBossScreen()
-    call g:printArray( g:msgBossKey )
+    call g:PrintArray( g:msgBossKey )
     call getchar() | " Just waiting for any key...
 endfunction
 
@@ -343,8 +354,8 @@ endfunction
 
 " Print player stats
 function! PrintPlayer()
-    call g:ppp( 'PLAYER STATS' )
-    call g:ppp( '---------------------------' )
+    call g:PPP( 'PLAYER STATS' )
+    call g:PPP( '---------------------------' )
     let offset = 15
     for key in keys( g:player )
         let val = g:player[ key ]
@@ -368,7 +379,7 @@ function! PrintPlayer()
         else
             let s .= val
         endif
-        call g:ppp( s )
+        call g:PPP( s )
     endfor
 endfunction
 
@@ -396,11 +407,11 @@ function! PrintGameStatus()
         \' Level: ' . g:player.level . 
         \' Score: ' . g:player.score
         
-    call g:ppp( '' )
-    call g:ppp( '___' )
-    call g:ppp( status1 )
-    call g:ppp( status2 )
-    call g:ppp( '' )
+    call g:PPP( '' )
+    call g:PPP( '___' )
+    call g:PPP( status1 )
+    call g:PPP( status2 )
+    call g:PPP( '' )
 endfunction
 
 
@@ -427,10 +438,10 @@ function! StartNewGame()
         \g:stats.status         : g:status.gameNotSaved
     \}  | " status.gameNone is 'not in a game'
 
-    let g:player.name = g:getString( '[NEW GAME] Please enter your name (Alowed: A-z0-9_): ', g:emptyValue.reject, g:player.name, g:namesMaxLen )
-    call g:ppp( '' )
+    let g:player.name = g:GetString( '[NEW GAME] Please enter your name (Alowed: A-z0-9_): ', g:emptyValue.reject, g:player.name, g:namesMaxLen )
+    call g:PPP( '' )
     call PrintPlayer()
-    call g:ppp( '' )
+    call g:PPP( '' )
     call PrintWelcomeMessage()
 endfunction
 
@@ -458,11 +469,11 @@ function! SaveGame()
     
     let res = writefile( buf, fullPath )
     
-    call g:ppp( '' )
+    call g:PPP( '' )
     if ( res == -1 )
-        call g:ppp( '[SAVE GAME] ERROR SAVING GAME! Cannot save your game.' )
+        call g:PPP( '[SAVE GAME] ERROR SAVING GAME! Cannot save your game.' )
     elseif ( res == 0 )
-        call g:ppp( '[SAVE GAME] Game saved (' . fname . ').' )
+        call g:PPP( '[SAVE GAME] Game saved (' . fname . ').' )
         let g:player.status = g:status.gameSaved
     endif
 endfunction
@@ -470,21 +481,21 @@ endfunction
 
 " Load game
 function! LoadGame()
-    let pName = g:getString( '[LOAD GAME] Please enter your name (Alowed: A-z0-9_): ', g:emptyValue.reject, g:player.name, g:namesMaxLen )
-    call g:ppp( '' )
+    let pName = g:GetString( '[LOAD GAME] Please enter your name (Alowed: A-z0-9_): ', g:emptyValue.reject, g:player.name, g:namesMaxLen )
+    call g:PPP( '' )
     
     let fname = pName . g:fext.savegame
     let fullPath = g:game.pathSavegame . fname
     
     if ( !filereadable( fullPath ) )
-        call g:ppp( '[LOAD GAME] ERROR: File not found or file not readable (' . fullPath . '). Try another file or check permissions.' )
+        call g:PPP( '[LOAD GAME] ERROR: File not found or file not readable (' . fullPath . '). Try another file or check permissions.' )
         return
     endif
     
     let buf = readfile( fullPath )
     
     if ( len( buf ) != 14 )
-        throw( 'ERROR: Savegame file is modified. Aborting.' )
+        tHRow( 'ERROR: Savegame file is modified. Aborting.' )
     endif
 
     let g:player.name           = buf[ 0 ]
@@ -503,8 +514,8 @@ function! LoadGame()
     let g:workGauge             = str2nr( buf[ 12 ] )
     let g:msgHappyMaxShown      = str2nr( buf[ 13 ] )
 
-    call g:ppp( '' )
-    call g:ppp( '[LOAD GAME] Game loaded.' )
+    call g:PPP( '' )
+    call g:PPP( '[LOAD GAME] Game loaded.' )
 endfunction
 
 
@@ -517,21 +528,21 @@ function! ShowHighscores()
     let titles  = []
     let levels  = []
     
-    call g:ppp( '' )
-    call g:ppp( 'TOP 15 DEVELOPERS' )
-    call g:hr()
+    call g:PPP( '' )
+    call g:PPP( 'TOP 15 DEVELOPERS' )
+    call g:HR()
     
     " Loading
     for fname in flist
         if ( !filereadable( fname ) )
-            call g:ppp( 'ERROR: File not readable (' . fname . '). Please check permissions.' )
+            call g:PPP( 'ERROR: File not readable (' . fname . '). Please check permissions.' )
             return
         endif
         
         let buf = readfile( fname )
     
         if ( len( buf ) != 14 )
-            throw( 'ERROR: Savegame file (' . fname . ') is modified. Aborting.' )
+            tHRow( 'ERROR: Savegame file (' . fname . ') is modified. Aborting.' )
         endif
         
         let names   = add( names, buf[ 0 ] )
@@ -551,10 +562,10 @@ function! ShowHighscores()
     endif
     
     if ( !len( scores ) )
-        call g:ppp( '*** No developers found ***' )
-        call g:ppp( '' )
-        call g:ppp( 'Either you just installed the game or you never did a savegame or you should hire another recruitment company.' )
-        call g:ppp( '' )
+        call g:PPP( '*** No developers found ***' )
+        call g:PPP( '' )
+        call g:PPP( 'Either you just installed the game or you never did a savegame or you should hire another recruitment company.' )
+        call g:PPP( '' )
         return
     endif
 
@@ -607,35 +618,35 @@ function! ShowHighscores()
             let s .= ' '
         endwhile
         let s .= printf( '%6d', scores[ i ] )
-        call g:ppp( s )
+        call g:PPP( s )
     endfor
     
-    call g:ppp( '' )
+    call g:PPP( '' )
 endfunction
 
 
 " Prints the company's welcome message
 function! PrintWelcomeMessage()
-    call g:ppp( 'Incoming email from the Human Resources department:' )
-    call g:ppp( '' )
-    call g:ppp( '~~~~' )
-    call g:ppp( 'WELCOME to ' . g:player.company . ', ' . g:player.name . '!' )
-    call g:ppp( '' )
-    call g:ppp( 'We are glad to have you as our new team member.' )
-    call g:ppp( 'As this is your first day, please make yourself familiar with the employee handbook, located on your desk. Inside you will find information about the company, our corporate culture and history. An HR representative would contact you shortly, to inform you about your available health benefits and other items of our employee social package.' )
-    call g:ppp( 'LOYALTY and DEVOTION are our corporate core values and we are determined to have all of our team members striving to pursue them.' )
-    call g:ppp( '' )
-    call g:ppp( 'Please also make sure to sign the Letter of Confidentiality, located on your desk and submit it to your line manager within an hour.' )
-    call g:ppp( '' )
-    call g:ppp( 'Enjoy your time at ' . g:player.company . ' and welcome aboard!' )
-    call g:ppp( '' )
-    call g:ppp( 'Kindly: ' . g:player.company . ' Human Resources Department' )
-    call g:ppp( '~~~~' )
-    call g:ppp( '' )
-    call g:ppp( 'You take a look around. Your desk contains just a phone, computer and the things the HR lady mentioned about. You finish all the boring paperwork and you are ready to work. Your line manager assigns you a new project, all your accounts are set and ready. You login to Bugzilla and discover you have been assigned a bunch of tasks to do.' )
-    call g:ppp( 'Well... off we go!' )
-    call g:ppp( '' )
-    call g:ppp( '[New game have just started. All menu keys are now enabled.]' )
+    call g:PPP( 'Incoming email from the Human Resources department:' )
+    call g:PPP( '' )
+    call g:PPP( '~~~~' )
+    call g:PPP( 'WELCOME to ' . g:player.company . ', ' . g:player.name . '!' )
+    call g:PPP( '' )
+    call g:PPP( 'We are glad to have you as our new team member.' )
+    call g:PPP( 'As this is your first day, please make yourself familiar with the employee handbook, located on your desk. Inside you will find information about the company, our corporate culture and history. An HR representative would contact you shortly, to inform you about your available health benefits and other items of our employee social package.' )
+    call g:PPP( 'LOYALTY and DEVOTION are our corporate core values and we are determined to have all of our team members striving to pursue them.' )
+    call g:PPP( '' )
+    call g:PPP( 'Please also make sure to sign the Letter of Confidentiality, located on your desk and submit it to your line manager within an hour.' )
+    call g:PPP( '' )
+    call g:PPP( 'Enjoy your time at ' . g:player.company . ' and welcome aboard!' )
+    call g:PPP( '' )
+    call g:PPP( 'Kindly: ' . g:player.company . ' Human Resources Department' )
+    call g:PPP( '~~~~' )
+    call g:PPP( '' )
+    call g:PPP( 'You take a look around. Your desk contains just a phone, computer and the things the HR lady mentioned about. You finish all the boring paperwork and you are ready to work. Your line manager assigns you a new project, all your accounts are set and ready. You login to Bugzilla and discover you have been assigned a bunch of tasks to do.' )
+    call g:PPP( 'Well... off we go!' )
+    call g:PPP( '' )
+    call g:PPP( '[New game have just started. All menu keys are now enabled.]' )
 endfunction
 
 
@@ -666,19 +677,19 @@ endfunction
 " Create Backup
 function! CreateBackup()
     call BackupAge( 0 )
-    call g:ppp( '[BACKUP] ' . GetBackupCreatedMessage() )
+    call g:PPP( '[BACKUP] ' . GetBackupCreatedMessage() )
 endfunction
 
 
 " Restore Backup
 function! RestoreBackup()
-    call g:ppp( '' )
+    call g:PPP( '' )
     if ( g:backupAge <= g:backupTooOld )
         " Restoring backup
-        call g:ppp( '[RESULT: Backup restored] ' . GetBackupRestoredMessage() )
+        call g:PPP( '[RESULT: Backup restored] ' . GetBackupRestoredMessage() )
     else
         " No recent backup
-        call g:ppp( '[RESULT: Code lost] ' . GetBackupNoMessage() )
+        call g:PPP( '[RESULT: Code lost] ' . GetBackupNoMessage() )
         if ( g:player.motivation > 0 )
             let g:player.motivation -= 1
         endif
@@ -689,7 +700,7 @@ endfunction
 
 " Work
 function! DoWork()
-    call g:ppp( '[WORK] ' . GetWorkMessage() )
+    call g:PPP( '[WORK] ' . GetWorkMessage() )
     call ChangeStat( g:stats.experience, 0 )
     call PumpWorkGauge()
     call ReleaseFunGauge()
@@ -700,7 +711,7 @@ endfunction
 
 " Have Fun
 function! HaveFun()
-    call g:ppp( '[FUN] ' . GetFunMessage() )
+    call g:PPP( '[FUN] ' . GetFunMessage() )
     call ChangeStat( g:stats.fun, 0 )
     call PumpFunGauge()
     call ReleaseWorkGauge()
@@ -729,9 +740,9 @@ endfunction
 " Code Lost event check/action
 function! CodeLostDestiny()
     if ( CodeLostEvent() )
-        call g:ppp( '' )
-        call g:ppp( '[CODE LOST] ' . GetCodeLostReason() )
-        call g:ppp( '' )
+        call g:PPP( '' )
+        call g:PPP( '[CODE LOST] ' . GetCodeLostReason() )
+        call g:PPP( '' )
         call RestoreBackup()
     endif
 endfunction
@@ -802,7 +813,7 @@ function! CommandValid( commandChar )
     let valid = 0
 
     if ( strlen( a:commandChar ) > 1 )
-        throw( "CommandValid( '" . a:commandChar . "' ): ERROR: Argument length is more than 1. Not a single char." )
+        tHRow( "CommandValid( '" . a:commandChar . "' ): ERROR: Argument length is more than 1. Not a single char." )
     endif
 
     for okCommand in keys( g:validCommands )
@@ -859,7 +870,7 @@ endfunction
 " step is not mandatory
 function! ChangeStat( stat, step )
     if ( !has_key( g:stats, a:stat ) )
-        throw( 'ChangeStat(' . a:stat . ', ' . a:step . '): ERROR: stat does not exist.' )
+        tHRow( 'ChangeStat(' . a:stat . ', ' . a:step . '): ERROR: stat does not exist.' )
     endif
     
     let min = 0
@@ -896,8 +907,8 @@ endfunction
 
 function! PrintMgrHappyMessage()
     if ( ( float2nr( g:player.mgrHappy * 100 ) % 100 == 0 ) && !g:msgHappyMaxShown )
-        call g:ppp( '' )
-        call g:ppp( '[MANAGER] ' . GetManagerHappyMessage() )
+        call g:PPP( '' )
+        call g:PPP( '[MANAGER] ' . GetManagerHappyMessage() )
         
         " Bugfix with the max value
         if ( g:player.mgrHappy == 10.00 )
@@ -911,8 +922,8 @@ endfunction
 
 " Confirm Quit
 function! ConfirmQuit()
-    call g:ppp( '' )
-    call g:ppp( '[QUIT GAME] Are you sure? Press "y" or "Y" to QUIT, any other key to go back to game...' )
+    call g:PPP( '' )
+    call g:PPP( '[QUIT GAME] Are you sure? Press "y" or "Y" to QUIT, any other key to go back to game...' )
     let userChoice = toupper( nr2char( getchar() ) )
     
     if ( userChoice ==? 'Y' )
@@ -930,13 +941,13 @@ endfunction
 
 
 " Horizontal ruler
-function! g:hr()
-    call g:ppp( '--------------------' )
+function! g:HR()
+    call g:PPP( '--------------------' )
 endfunction
 
 
 " Menu input
-function! g:getMenuChoice( defaultChoice )
+function! g:GetMenuChoice( defaultChoice )
     let userChoice = ''
 
     let validCommand = 0
@@ -949,7 +960,7 @@ function! g:getMenuChoice( defaultChoice )
         endif
 
         if ( !validCommand )
-            call g:ppp( 'ERROR: Invalid key ('.userChoice.'). Valid keys: ' . join( keys( g:validCommands ) ) )
+            call g:PPP( 'ERROR: Invalid key ('.userChoice.'). Valid keys: ' . join( keys( g:validCommands ) ) )
         endif
     endwhile
 
@@ -959,7 +970,7 @@ endfunction
 
 " Function to get a string of characters in the class [A-z0-9_]
 " Control keys accepted: Enter and Backspace
-function! g:getString( promptS, allowEmpty, valueDefault, maxLength )
+function! g:GetString( promptS, allowEmpty, valueDefault, maxLength )
     let value   = a:valueDefault
     let lineS   = a:promptS
     let cursorX = '_'
@@ -970,7 +981,7 @@ function! g:getString( promptS, allowEmpty, valueDefault, maxLength )
     endif
     
     call append( line( "$" ), lineS . value . cursorX )
-    call g:scroll()
+    call g:SCROLL()
 
     let keyPress = ''
     while ( 1 )
@@ -999,23 +1010,23 @@ endfunction
 
 
 " Screen printing function
-function! g:ppp( string )
+function! g:PPP( string )
     call append( line( "$" ), a:string )
     call cursor( "$", 1 )
-    call g:scroll()
+    call g:SCROLL()
 endfunction
 
 
 " Print array
-function! g:printArray( array )
+function! g:PrintArray( array )
     for x in a:array
-        call g:ppp( x )
+        call g:PPP( x )
     endfor
 endfunction
 
 
 " Print hash
-function! g:printHash( hashH, offsetDefault )
+function! g:PrintHash( hashH, offsetDefault )
     let offset = a:offsetDefault
     if ( empty( offset ) )
         let offset = 20
@@ -1027,22 +1038,22 @@ function! g:printHash( hashH, offsetDefault )
             let s .= ' '
         endwhile
         let s .= val
-        call g:ppp( s )
+        call g:PPP( s )
     endfor
 endfunction
 
 
 " Force scroll
-function! g:scroll()
+function! g:SCROLL()
     execute "normal G"
     redraw
 endfunction
 
 
 " Clear screen
-function! g:cls()
+function! g:CLS()
     for i in range( 100 )
-        call g:ppp( '' )
+        call g:PPP( '' )
     endfor
 endfunction
 
@@ -1343,7 +1354,7 @@ let g:msgCodeLostReasons = [
     \'The cat of the office secretary just ate your power cable.',
     \'Your computer got infested by roaches.',
     \'Two newlywed spiders went on a honeymoon in your power adapter. It died',
-    \'The three-year-old kid of the secretary just pulled off your power cable. Now it looks cute at you and awaits your approval.',
+    \'The tHRee-year-old kid of the secretary just pulled off your power cable. Now it looks cute at you and awaits your approval.',
     \'That cute QA girl just blackbox-tested the effect of spilling cofee on your computer by accident. She smiles innocent at you.',
     \'In the rush of quick-reading a bunch of stupid emails you clicked and installed a malware. Your computer got hacked.',
     \'Your computer got infected by a legendary misterious ancient Commodore64 virus. You watch the letters dissapear off the screen and wonder how this is possible.',
@@ -1472,7 +1483,7 @@ let g:msgHavingFun = [
     \'You spend time enjoying Second Reality on a DosBox. Unduplicable!',
     \'You spend wonderful time playing Pinball Fantasies. You break your left SHIFT key, but who cares.',
     \'You spend the whole afternoon piercing your ears with the sounds of various old .MODs, .STMs, .S3Ms and few .XMs. Nobody in the office can understand why you enjoy crappy tunes so much. They understand nothing of music. You can''t forget the cool time spent years ago listening to tunes on 12mHz PC Speaker frequency, before getting your first SoundBlaster 2.0. Ah...',
-    \'You spend time watching all Cynthia Rothrock movies. Cutie.',
+    \'You spend time watching all Cynthia RotHRock movies. Cutie.',
     \'After watching "Kickboxer 1" all over again you go out practicing your skills, but unlike the movie, the palm tree always wins against you.',
     \'Watching "Blood Sport". Rrrrroarrr!',
     \'Watching "Best of the best 1". Probably the best role of Eric Roberts ever.',

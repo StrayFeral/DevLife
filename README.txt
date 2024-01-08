@@ -1,12 +1,20 @@
-DevLife v1.0, May 2013
+Mirror URL: http://www.vim.org/scripts/script.php?script_id=4583
+
+DevLife v1.1, Jan 2024
 ========================
-(c)2013 Evgueni Antonov, http://ca.linkedin.com/in/eantonoff/
+(c)2024 Evgueni Antonov, https://www.linkedin.com/in/eantonoff/
 License: GPL v3, http://www.gnu.org/licenses/gpl-3.0.html
 
 Thank you for downloading DevLife!
 
 You may freely distribute and modify the file, as long as the program
 remains free of charge.
+
+
+CHANGELOG
+------------------------
+2024-01-07: v1.1 Updated for Vim 8.2, tested on Lubuntu 22.04
+2013-05-10: v1.0 Initial version release for Vim 7.3, tested on Windows 7
 
 
 WHAT IS THIS
@@ -30,11 +38,10 @@ Evgueni Antonov
 WHAT DO I NEED TO RUN IT
 ------------------------
 You need Vim (http://www.vim.org). 
-This script was written for Vim 7.3 for Windows.
-It is NOT tested on the Linux version.
+This script was written for Vim 7.3 for Windows 7 and is last fixed for
+Vim 8.2 and tested on Lubuntu 22.04.
 It is not designed to be run when multiple windows and buffers are open.
 
-If it haves any problems on Linux, please let me know.
 I will upload this to GitHub, so for any bug-reports, please submit there.
 
 So far, no bugs are discovered, if you discover one, please submit. If
@@ -46,26 +53,38 @@ Thank you!
 
 HOW TO INSTALL
 ------------------------
+WINDOWS:
 Just copy the script file devlife.vim anywhere within Vim's path.
+
+LINUX:
+mkdir ~/.vim/plugin
+cp <DOWNLOADED_PATH>plugin/devlife.vim ~/.vim/plugin
 
 
 HOW TO SETUP
 ------------------------
-Just edit the value on line 34: devlifeSavePath = 'your/savegames/path/'
-Please make sure the path ends with a separator!
+No need to do anything. But if you want to change your savegame path,
+just edit the value on line 40: g:savegamePath = '/tmp/'
+Please make sure the path ends with a slash!
 Example: 'c:\proj\hal9000\' or if on Linux: '/blah/proj/hal9000/'
 
 
 HOW TO RUN IT
 ------------------------
-In Vim:
-:so devlife.vim
+RUN ON VIM 8.2:
+:call RunDevLife()
+
+RUN ON VIM 7.3:
+:source devlife.vim
 :call RunDevLife()
 
 Or if you want you can set Vim shortcuts, simply put this in your
 vimrc file:
 :nmap \s :so devlife.vim
 :nmap \b :call RunDevLife()
+
+NOTE:
+It seems Vim 8 loads automatically the plugins, so no need to load the source.
 
 My own vimrc file is included with this package, so you can use it.
 
